@@ -38,6 +38,9 @@ class PaginatedSelect(Select):
         end = start + options_per_page
         options = subjects[start:end]
 
+        self.subject_names = {subject["subject_uuid"]: subject["subject"] for subject in options}
+
+
         select_options = [
             discord.SelectOption(
                 label=subject["subject"], value=subject["subject_uuid"]
@@ -56,6 +59,8 @@ class PaginatedSelect(Select):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         selected_option = self.values[0]
+        selected_subject_name = self.subject_names[selected_option]
+
         base_url = f"https://api.kaizenklass.me/api/v2/get/subjects/{selected_option}/resources"
 
         all_resources = []
@@ -76,7 +81,7 @@ class PaginatedSelect(Select):
                 current_page += 1
 
             embed = discord.Embed(
-                title=f"Resources for {selected_option}",
+                title=f"Resources for {selected_subject_name}",
                 color=discord.Color.blurple(),
             )
 
