@@ -82,7 +82,7 @@ class PaginatedSelect(Select):
 
             embed = discord.Embed(
                 title=f"Resources for {selected_subject_name}",
-                color=discord.Color.blurple(),
+                color=discord.Color.red(),
             )
 
             for resource in all_resources:
