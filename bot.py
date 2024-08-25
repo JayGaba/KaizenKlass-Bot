@@ -139,8 +139,11 @@ class PaginatedView(View):
         self.subjects = subjects
         self.page = 0
         self.user_id = user_id
+        self.message = None
         self.update_view()
-
+        
+    def set_message(self, message):
+        self.message = message   
 
     def update_view(self):
         self.clear_items()
@@ -233,8 +236,12 @@ class RegistrationView(View):
         self.subjects = subjects
         self.page = 0
         self.user_id = user_id
+        self.message = None
         self.update_view()
 
+    def set_message(self, message):
+        self.message = message
+        
     def update_view(self):
         self.clear_items()
         self.add_item(RegistrationSelect(self.subjects, self.page, self.user_id))
@@ -279,6 +286,7 @@ class MainMenuView(View):
         message = await interaction.followup.send(
             "Select subjects to register:", view=view, ephemeral=True
         )
+        view.set_message(message)
         view_dict[message.id] = view
 
     @discord.ui.button(label="View Subjects", style=ButtonStyle.success)
@@ -316,6 +324,7 @@ class MainMenuView(View):
                 message = await interaction.followup.send(
                     "Select a subject to view resources:", view=view, ephemeral=True
                 )
+                view.set_message(message)
                 view_dict[message.id] = view
             else:
                 await interaction.followup.send(
