@@ -57,7 +57,7 @@ class PaginatedSelect(Select):
 
     # fetch resources for registered subject
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
+        # await interaction.response.defer(ephemeral=True)
         selected_option = self.values[0]
         selected_subject_name = self.subject_names[selected_option]
 
@@ -196,7 +196,7 @@ class RegistrationSelect(Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
+        # await interaction.response.defer(ephemeral=True)
         selected_options = self.values
 
         async with aiosqlite.connect(DATABASE_NAME) as db:
@@ -390,7 +390,7 @@ async def register(interaction: discord.Interaction):
     view_dict[message.id] = view
 
 
-@tree.command(name="subjects", description="View registered subjects")
+@tree.command(name="subjects", description="View resources for registered subjects")
 async def subjects(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     user_id = str(interaction.user.id)
@@ -426,6 +426,8 @@ async def subjects(interaction: discord.Interaction):
         )
 
 
+# Interaction has already been acknowledged fix -> remove defer from paginatedselect & registration select
+# some conflict with discord api due to multiple defer calls, address at once in on_interaction fxn     
 @client.event
 async def on_interaction(interaction: discord.Interaction):
     if interaction.type == discord.InteractionType.component:
@@ -433,6 +435,8 @@ async def on_interaction(interaction: discord.Interaction):
         if custom_id:
             view = view_dict.get(interaction.message.id)
             if isinstance(view, (PaginatedView, RegistrationView)):
+                await interaction.response.defer(ephemeral=True)
+                
                 if custom_id == "previous":
                     if view.page > 0:
                         view.page -= 1
@@ -441,15 +445,14 @@ async def on_interaction(interaction: discord.Interaction):
                         view.page += 1
                 elif custom_id == "done":
                     view.page = 0
-                elif custom_id == "done":
                     await view.reset_selection()
                     await interaction.followup.send(
                         "Registration complete! You can select more subjects or close this message.",
-                        ephemeral=True,
+                        ephemeral=True
                     )
                     return
+                
                 view.update_view()
-                await interaction.response.edit_message(view=view)
-
+                await interaction.edit_original_response(view=view)
 
 client.run(DISCORD_TOKEN)
